@@ -117,10 +117,13 @@ class SupabaseService {
       debugPrint(
         '[Supabase] getTeacherAssignments called for teacherId=$teacherId',
       );
-      final data = await client
+      var query = client
           .from('teacher_assignments')
-          .select('*, classes(name), subjects(name)')
-          .eq('teacher_id', teacherId);
+          .select('*, classes(name), subjects(name)');
+      if (teacherId.isNotEmpty) {
+        query = query.eq('teacher_id', teacherId);
+      }
+      final data = await query;
       debugPrint(
         '[Supabase] getTeacherAssignments returned ${data.length} assignments',
       );
@@ -760,6 +763,7 @@ class SupabaseService {
       final data = await client
           .from('attendance')
           .select('''
+            *,
             sessions!inner(class_id, subject_id, subjects(name)),
             users!inner(name, email)
           ''')
