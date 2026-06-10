@@ -334,7 +334,7 @@ class _ReportsTabState extends State<ReportsTab> {
     // Group by subject
     final bySubject = <String, Map<String, dynamic>>{};
     for (final r in records) {
-      final subjectName = r['subjects']?['name'] ?? 'Unknown';
+      final subjectName = r['sessions']?['subjects']?['name'] ?? 'Unknown';
       if (!bySubject.containsKey(subjectName)) {
         bySubject[subjectName] = {'present': 0, 'total': 0};
       }
