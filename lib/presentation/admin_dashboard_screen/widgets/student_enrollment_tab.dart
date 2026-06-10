@@ -791,7 +791,7 @@ class _StudentEnrollmentTabState extends State<StudentEnrollmentTab> {
                                 ),
                                 if (isEnrolled)
                                   Text(
-                                    'Class: ${student.className ?? 'Unknown'}',
+                                    'Class: ${_classes.firstWhere((c) => c.id == student.classId, orElse: () => const ClassModel(id: "", name: "Unknown")).name}',
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       color: AppTheme.success,
