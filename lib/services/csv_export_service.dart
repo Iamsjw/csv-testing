@@ -450,17 +450,4 @@ class CsvExportService {
       ),
     );
   }
-
-  static String _formatDate(DateTime dt) => '${dt.day}/${dt.month}/${dt.year}';
-
-  static String _formatTime(DateTime dt) =>
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-
-  static String _formatDuration(Duration d) {
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60);
-    final s = d.inSeconds.remainder(60);
-    if (h > 0) return '${h}h ${m}m';
-    return '${m}m ${s}s';
-  }
 }
