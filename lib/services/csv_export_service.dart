@@ -1,9 +1,13 @@
+import 'dart:convert' show utf8;
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:universal_html/html.dart' as html;
-
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
+
 
 import '../models/attendance_model.dart';
 import '../models/session_model.dart';
@@ -397,9 +401,10 @@ class CsvExportService {
               Row(
                 children: [
                   Expanded(
+                    flex: 2,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primary, width: 1.5),
+                        side: BorderSide(color: AppTheme.textSecondary.withAlpha(50), width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -410,29 +415,30 @@ class CsvExportService {
                         'Close',
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.primary,
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
+                    flex: 2,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppTheme.primary, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.copy_all_rounded,
-                        color: Colors.white,
+                        color: AppTheme.primary,
                         size: 16,
                       ),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: csvContent));
-                        Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
@@ -451,7 +457,54 @@ class CsvExportService {
                         'Copy',
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.primary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 3,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(
+                        Icons.share_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      onPressed: () async {
+                        try {
+                          final tempDir = await getTemporaryDirectory();
+                          final file = File('${tempDir.path}/$fileName');
+                          await file.writeAsString(csvContent, encoding: utf8);
+                          await Share.shareXFiles(
+                            [XFile(file.path)],
+                            subject: fileName,
+                          );
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to share: $e'),
+                                backgroundColor: AppTheme.errorSoft,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      label: Text(
+                        'Share/Save',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          fontSize: 12,
                         ),
                       ),
                     ),
