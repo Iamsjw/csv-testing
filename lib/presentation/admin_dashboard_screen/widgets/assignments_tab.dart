@@ -412,7 +412,7 @@ class _AssignmentsTabState extends State<AssignmentsTab> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${a.subjectName ?? "Unknown Subject"} · ${a.teacherId}',
+                                  '${a.subjectName ?? "Unknown Subject"} · ${_teachers.firstWhere((t) => t.id == a.teacherId, orElse: () => const UserModel(id: "", name: "Unknown", email: "", role: "teacher")).name}',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
                                     color: AppTheme.textMuted,
