@@ -377,6 +377,17 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen>
     final session = _activeSession;
     final attendance = List<AttendanceModel>.from(_attendance);
 
+    final classModel = _classes.firstWhere(
+      (c) => c.id == session!.classId,
+      orElse: () => ClassModel(id: '', name: 'Unknown'),
+    );
+    final subjectModel = _subjects.firstWhere(
+      (s) => s.id == session.subjectId,
+      orElse: () => SubjectModel(id: '', name: 'Unknown'),
+    );
+    final className = classModel.name;
+    final subjectName = subjectModel.name;
+
     await SupabaseService.endSession(session!.id);
     await BleService.stopAdvertising();
     _countdownTimer?.cancel();
@@ -392,8 +403,8 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen>
         builder: (_) => SessionReportScreen(
           session: session,
           attendance: attendance,
-          className: session.className ?? 'Unknown',
-          subjectName: session.subjectName ?? 'Unknown',
+          className: className,
+          subjectName: subjectName,
         ),
       ),
     );
@@ -1062,8 +1073,16 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen>
 
   Widget _buildDownloadButton() {
     if (_activeSession == null) return const SizedBox.shrink();
-    final className = _activeSession!.className ?? 'Unknown';
-    final subjectName = _activeSession!.subjectName ?? 'Unknown';
+    final classModel = _classes.firstWhere(
+      (c) => c.id == _activeSession!.classId,
+      orElse: () => ClassModel(id: '', name: 'Unknown'),
+    );
+    final subjectModel = _subjects.firstWhere(
+      (s) => s.id == _activeSession!.subjectId,
+      orElse: () => SubjectModel(id: '', name: 'Unknown'),
+    );
+    final className = classModel.name;
+    final subjectName = subjectModel.name;
 
     return Container(
       height: 48,
