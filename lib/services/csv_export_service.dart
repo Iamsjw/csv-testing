@@ -285,7 +285,7 @@ class CsvExportService {
       final r = records[i];
       final name = r['users']?['name'] ?? 'Unknown';
       final email = r['users']?['email'] ?? 'N/A';
-      final subject = r['subjects']?['name'] ?? 'Unknown';
+      final subject = r['sessions']?['subjects']?['name'] ?? 'Unknown';
       final status = r['status'] == 'present'
           ? 'Present'
           : (r['status'] == 'revoked' ? 'Revoked' : (r['status'] ?? 'Unknown'));
