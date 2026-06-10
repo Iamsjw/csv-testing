@@ -315,14 +315,17 @@ class CsvExportService {
     String csvContent,
     String fileName,
   ) {
+    final report = _parseCsv(csvContent);
+    final isAdminReport = report.headers.contains('Subject');
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: AppTheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
-          width: double.maxFinite,
-          padding: const EdgeInsets.all(24),
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,20 +339,35 @@ class CsvExportService {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      Icons.table_chart_rounded,
+                      Icons.analytics_outlined,
                       color: AppTheme.primary,
-                      size: 20,
+                      size: 22,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      'CSV Preview',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Report Preview',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          fileName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 10,
+                            color: AppTheme.textMuted,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
@@ -362,42 +380,231 @@ class CsvExportService {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                fileName,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  color: AppTheme.textMuted,
-                ),
-              ),
               const SizedBox(height: 16),
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  maxHeight: MediaQuery.of(context).size.height * 0.45,
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.background,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.shadowLight.withAlpha(25),
-                      width: 1,
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: SelectableText(
-                      csvContent,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        color: AppTheme.textSecondary,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (report.details.isNotEmpty) ...[
+                        _buildSectionHeader('Details'),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.background,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppTheme.shadowLight.withAlpha(25),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: report.details.entries.map((e) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      e.key,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                    Text(
+                                      e.value,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (report.summary.isNotEmpty) ...[
+                        _buildSectionHeader('Summary'),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: report.summary.entries.map((e) {
+                            return Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.background,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppTheme.primary.withAlpha(15),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      e.key,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 10,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      e.value,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.primaryCyan,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      _buildSectionHeader('Attendance Records (${report.records.length})'),
+                      const SizedBox(height: 8),
+                      if (report.records.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              'No records found.',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppTheme.textMuted,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: report.records.length,
+                          itemBuilder: (context, idx) {
+                            final record = report.records[idx];
+                            if (record.length < 4) return const SizedBox.shrink();
+
+                            final name = record[1];
+                            final email = record[2];
+                            
+                            final String status;
+                            final String extra;
+                            final bool isPresent;
+
+                            if (isAdminReport && record.length >= 6) {
+                              final subject = record[3];
+                              status = record[4];
+                              extra = 'Subject: $subject | ${record[5]}';
+                              isPresent = status.toLowerCase() == 'present';
+                            } else {
+                              status = record[3];
+                              extra = record[4];
+                              isPresent = status.toLowerCase() == 'present';
+                            }
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.background,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppTheme.shadowLight.withAlpha(15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      record[0],
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: AppTheme.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: AppTheme.textPrimary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          email,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: AppTheme.textSecondary,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          extra,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: AppTheme.textMuted,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: isPresent ? AppTheme.successSoft : AppTheme.errorSoft,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      status,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: isPresent ? AppTheme.success : AppTheme.error,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -518,6 +725,99 @@ class CsvExportService {
     );
   }
 
+  static Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.textMuted,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  static _PreviewReport _parseCsv(String csvContent) {
+    final lines = csvContent.split('\n');
+    String title = 'Attendance Report';
+    final details = <String, String>{};
+    final summary = <String, String>{};
+    final headers = <String>[];
+    final records = <List<String>>[];
+
+    String section = '';
+
+    List<String> parseFields(String line) {
+      final fields = <String>[];
+      final buffer = StringBuffer();
+      bool inQuotes = false;
+      for (int i = 0; i < line.length; i++) {
+        final c = line[i];
+        if (c == '"') {
+          inQuotes = !inQuotes;
+        } else if (c == ',' && !inQuotes) {
+          fields.add(buffer.toString().trim());
+          buffer.clear();
+        } else {
+          buffer.write(c);
+        }
+      }
+      fields.add(buffer.toString().trim());
+      return fields;
+    }
+
+    for (var rawLine in lines) {
+      final line = rawLine.trim();
+      if (line.isEmpty) continue;
+
+      if (line.startsWith('UpasthitiX')) {
+        title = line;
+        continue;
+      }
+
+      if (line == 'SESSION DETAILS' || line == 'CLASS DETAILS') {
+        section = 'DETAILS';
+        continue;
+      } else if (line == 'SUMMARY') {
+        section = 'SUMMARY';
+        continue;
+      } else if (line == 'ATTENDANCE RECORDS') {
+        section = 'RECORDS';
+        continue;
+      }
+
+      final fields = parseFields(line);
+      if (fields.isEmpty) continue;
+
+      if (section == 'DETAILS') {
+        if (fields.length >= 2) {
+          details[fields[0]] = fields[1];
+        }
+      } else if (section == 'SUMMARY') {
+        if (fields.length >= 2) {
+          summary[fields[0]] = fields[1];
+        }
+      } else if (section == 'RECORDS') {
+        if (headers.isEmpty) {
+          headers.addAll(fields);
+        } else {
+          records.add(fields);
+        }
+      }
+    }
+
+    return _PreviewReport(
+      title: title,
+      details: details,
+      summary: summary,
+      headers: headers,
+      records: records,
+    );
+  }
+
   static void _showSuccessSnackBar(BuildContext context, String fileName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -550,3 +850,20 @@ class CsvExportService {
     );
   }
 }
+
+class _PreviewReport {
+  final String title;
+  final Map<String, String> details;
+  final Map<String, String> summary;
+  final List<String> headers;
+  final List<List<String>> records;
+
+  _PreviewReport({
+    required this.title,
+    required this.details,
+    required this.summary,
+    required this.headers,
+    required this.records,
+  });
+}
+
