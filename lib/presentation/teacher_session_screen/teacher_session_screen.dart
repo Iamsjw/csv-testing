@@ -374,11 +374,11 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen>
     setState(() => _isEndingSession = true);
 
     // Capture current session and attendance before ending
-    final session = _activeSession;
+    final session = _activeSession!;
     final attendance = List<AttendanceModel>.from(_attendance);
 
     final classModel = _classes.firstWhere(
-      (c) => c.id == session!.classId,
+      (c) => c.id == session.classId,
       orElse: () => ClassModel(id: '', name: 'Unknown'),
     );
     final subjectModel = _subjects.firstWhere(
@@ -388,7 +388,7 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen>
     final className = classModel.name;
     final subjectName = subjectModel.name;
 
-    await SupabaseService.endSession(session!.id);
+    await SupabaseService.endSession(session.id);
     await BleService.stopAdvertising();
     _countdownTimer?.cancel();
     _codeOnlyTimer?.cancel();
